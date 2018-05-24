@@ -2,7 +2,8 @@ package formularios;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -10,106 +11,142 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
+
+import controladores.Acao;
 
 public class FormularioPrincipal {
 
-	public static void main(String[] args) {
+	//Construtor
+	public FormularioPrincipal() {
+		
+		// JFrame
+		JFrame formulario = new JFrame("Formulário Principal");
+		formulario.setSize(500, 420);
+		formulario.setLocationRelativeTo(null);
+		formulario.setLayout(null);
+		formulario.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		// Componentes para realizar o cadastro
+		JLabel lblNomeProduto = new JLabel("Nome do produto:");
+		JLabel lblValorProduto = new JLabel("Valor do produto:");
+		JLabel lblQuantidadeProduto = new JLabel("Quantidade do produto:");
+		JTextField txtNomeProduto = new JTextField();
+		JTextField txtQuantidadeProduto = new JTextField();
+		JTextField txtValorProduto = new JTextField();
+		JButton btnCadastrar = new JButton("Cadastrar Produto");
+		
+		lblNomeProduto.setBounds(80, 10, 120, 20);
+		lblValorProduto.setBounds(80, 40, 120, 20);
+		lblQuantidadeProduto.setBounds(80, 70, 150, 20);
+		txtNomeProduto.setBounds(220, 10, 200, 20);
+		txtValorProduto.setBounds(220, 40, 200, 20);
+		txtQuantidadeProduto.setBounds(220, 70, 200, 20);
+		btnCadastrar.setBounds(180, 110, 150, 30);
+		
+		// Instanciar um objeto da classe Ação	
+		Acao a = new Acao();
+		
+		// JTable
+		JTable tabela = new JTable(a.listarProdutos());		
 
-		//JFrame
-		JFrame formularioPrincipal = new JFrame();
-		formularioPrincipal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		formularioPrincipal.setSize(300, 500);
-		formularioPrincipal.setLocationRelativeTo(null);
-		formularioPrincipal.setTitle("Formulario Principal");
-		formularioPrincipal.setLayout(null);
+
+		// JScrollPane
+		JScrollPane barra = new JScrollPane(tabela);
+		barra.setBounds(74, 160, 350, 200);
 		
-		//JLabel
-		JLabel produto = new JLabel();
-		produto.setText("Produto");
-		produto.setBounds(10, 10, 100, 20);
+		// Ação no botão de cadastro
+		btnCadastrar.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				// Obter os dados informados pelo usuário
+				String nomeProduto = txtNomeProduto.getText();
+				double valorProduto = Double.parseDouble(txtValorProduto.getText());
+				int quantidadeProduto = Integer.parseInt(txtQuantidadeProduto.getText());
+				
+				// Criar objeto e chamar o método
+				a.cadastrar(nomeProduto, valorProduto, quantidadeProduto);
+				
+				//Atualizar tabela
+				tabela.setModel(a.listarProdutos());
+				
+				// Limpar campos
+				txtNomeProduto.setText("");
+				txtValorProduto.setText("");
+				txtQuantidadeProduto.setText("");
+				
+				// Cursor no campo nome
+				txtNomeProduto.requestFocus();
+				
+			}
+		});
 		
-		JLabel valor = new JLabel();
-		valor.setText("Valor");
-		valor.setBounds(10, 30, 100, 20);
 		
-		JLabel quantidade = new JLabel();
-		quantidade.setText("Quantidade");
-		quantidade.setBounds(10, 50, 100, 20);
-		
-		//JTextFiald
-		JTextField obterProduto = new JTextField();
-		obterProduto.setBounds(110, 10, 150, 20);
-		
-		JTextField obterValor = new JTextField();
-		obterValor.setBounds(110, 30, 150, 20);
-		
-		JTextField obterQuantidade = new JTextField();
-		obterQuantidade.setBounds(110, 50, 150, 20);
-		
-		// DefaultTableModel - Serve para agrupar os dados
-		DefaultTableModel exibirDados = new DefaultTableModel();
-		
-		// JTable - Serve para exibir o DefaultTableModel
-		JTable tabela = new JTable(exibirDados);
+		// Ação na tabela
+		tabela.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				
+				//Obter a linha 
+				int linha = tabela.getSelectedRow();
+				
+				// Obter os dados
+				String nomeProduto = tabela.getValueAt(linha, 0).toString();
+				double valorProduto = Double.parseDouble(tabela.getValueAt(linha, 1).toString());
+				int quantidadeProduto = Integer.parseInt(tabela.getValueAt(linha, 2).toString());
+				
+				// Criar o novo formulário
+				FormularioAlteracao f = new FormularioAlteracao(nomeProduto, valorProduto, quantidadeProduto, linha);
+				
+				// Fechar o FormulárioPrincipal
+				formulario.dispose();
 						
-		// JScrollPane - Barra de rolagem englobando o JTable
-		JScrollPane barraRolagem = new JScrollPane(tabela);
-		barraRolagem.setBounds(10, 200, 260, 100);
-		
-		//Criar colunas
-		exibirDados.addColumn("Produto");
-		exibirDados.addColumn("Valor");
-		exibirDados.addColumn("Quantidade");
-		
-		//JButton
-		JButton botao = new JButton();
-		botao.setText("Cadastrar");
-		botao.setBounds(50, 85, 150, 40);
-		
-		// Adicionar ação ao botão
-				botao.addActionListener(new ActionListener() {
-
-					@Override
-					public void actionPerformed(ActionEvent e) {
-
-						String produto;
-						double val;
-						int qtd;
-						
-						produto = obterProduto.getText();
-						val = Double.parseDouble(obterValor.getText());
-						qtd = Integer.parseInt(obterQuantidade.getText());
-						
-						exibirDados.addRow(new Object[]{produto, val, qtd});
-						
-						// Limpar
-						obterProduto.setText("");
-						obterValor.setText("");
-						obterQuantidade.setText("");
-
-						// Selecionar 
-						obterProduto.requestFocus();
-
-					}
-				});
+			}
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+				
+				
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 		
 		
-		//Adicionar ao JFrame
-		formularioPrincipal.add(quantidade);
-		formularioPrincipal.add(valor);
-		formularioPrincipal.add(produto);
-		formularioPrincipal.add(obterQuantidade);
-		formularioPrincipal.add(obterValor);
-		formularioPrincipal.add(obterProduto);
-		formularioPrincipal.add(botao);
-		formularioPrincipal.add(barraRolagem);
 		
-		//Tornar visivel
-		formularioPrincipal.setVisible(true);
-		formularioPrincipal.repaint();
+		// Adicionar elemenetos ao JFrame
+		formulario.add(lblNomeProduto);
+		formulario.add(lblValorProduto);
+		formulario.add(lblQuantidadeProduto);
+		formulario.add(txtNomeProduto);
+		formulario.add(txtValorProduto);
+		formulario.add(txtQuantidadeProduto);
+		formulario.add(btnCadastrar);
+		formulario.add(barra);
 		
+		// Exibir Estrutura
+		formulario.setVisible(true);
 		
 	}
-
+	
 }
